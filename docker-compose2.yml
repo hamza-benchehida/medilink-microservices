@@ -1,0 +1,71 @@
+version: "3.8"
+services:
+
+  eureka-registry:
+    build:
+      context: ./registry
+    image: registry-image
+    ports:
+      - "8888:8888"
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    image: gateway-image
+    ports:
+      - "7777:7777"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - eureka.client.serviceUrl.defaultZone=http://eureka-registry:8888/eureka
+    depends_on:
+      - eureka-registry
+
+  mysql-db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  mongo-db:
+    image: mongo:4.4
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DB}
+
+  ms-patient-mysql:
+    build:
+      context: ./ms-patient-mysql
+    restart: on-failure
+    image: patient-mysql-image
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/patientdb
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - eureka.client.serviceUrl.defaultZone=http://eureka-registry:8888/eureka
+    depends_on:
+      - mysql-db
+      - eureka-registry
+      - api-gateway
+
+  ms-ordonnance-mongo:
+    build:
+      context: ./ms-ordonnance-mongo
+    image: ordonnance-mongo-image
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_DATA_MONGODB_HOST=mongo-db
+      - SPRING_DATA_MONGODB_PORT=27017
+      - SPRING_DATA_MONGODB_DATABASE=ordonnancedb
+      - SPRING_DATA_MONGODB_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - SPRING_DATA_MONGODB_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE=admin
+      - eureka.client.serviceUrl.defaultZone=http://eureka-registry:8888/eureka
+    depends_on:
+      - mongo-db
+      - eureka-registry
+      - api-gateway

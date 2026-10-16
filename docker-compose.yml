@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+
+  eureka-registry:
+    build:
+      context: ./registry
+    image: registry-image
+    ports:
+      - "8888:8888"
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    image: gateway-image
+    ports:
+      - "7777:7777"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - eureka.client.serviceUrl.defaultZone=http://eureka-registry:8888/eureka
+    depends_on:
+      - eureka-registry
+
+  ms-patient:
+    build:
+      context: ./ms-patient
+    image: patient-image
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - eureka.client.serviceUrl.defaultZone=http://eureka-registry:8888/eureka
+    depends_on:
+      - eureka-registry
+      - api-gateway
+
+  ms-ordonnance:
+    build:
+      context: ./ms-ordonnance
+    image: ordonnance-image
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - eureka.client.serviceUrl.defaultZone=http://eureka-registry:8888/eureka
+    depends_on:
+      - eureka-registry
+      - api-gateway
+      - ms-patient
+
+  ms-remboursement:
+    build:
+      context: ./ms-remboursement
+    image: remboursement-image
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - eureka.client.serviceUrl.defaultZone=http://eureka-registry:8888/eureka
+    depends_on:
+      - eureka-registry
+      - api-gateway

@@ -1,0 +1,8 @@
+target/
+.idea/
+*.iml
+.vscode/
+*.log
+.env
+node_modules/
+BOOT-INF/

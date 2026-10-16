@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: ms-patient
+          uri: lb://ms-patient
+          predicates:
+            - Path=/ms-patient/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: ms-patient-cb
+                fallbackUri: forward:/fallback/patient
+        - id: ms-ordonnance
+          uri: lb://ms-ordonnance
+          predicates:
+            - Path=/ms-ordonnance/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: ms-ordonnance-cb
+                fallbackUri: forward:/fallback/ordonnance
+        - id: ms-remboursement
+          uri: lb://ms-remboursement
+          predicates:
+            - Path=/ms-remboursement/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: ms-remboursement-cb
+                fallbackUri: forward:/fallback/remboursement
+server:
+  port: 7777
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8888/eureka
+resilience4j:
+  circuitbreaker:
+    instances:
+      ms-patient-cb:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+      ms-ordonnance-cb:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+      ms-remboursement-cb:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s

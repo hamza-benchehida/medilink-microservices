@@ -1,0 +1,57 @@
+curl http://localhost:8081/api/patient/1
+
+curl http://localhost:8082/api/ordonnance/1
+
+running the instances:
+
+cd ~/Downloads/TP3_Discrovery_2026-master/ms-patient
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8084"
+
+
+
+
+
+
+
+curl http://localhost:8081/api/patient/1
+curl http://localhost:8081/api/patient/1
+curl http://localhost:8082/api/ordonnance/1
+curl http://localhost:8082/api/ordonnance/1
+
+nouvelle endpoints:
+curl http://localhost:8083/api/remboursement/1
+ results:
+hamza@hamza-X55A:~/Downloads/TP3_Discrovery_2026-master/ms-ordonnance$ curl http://localhost:8083/api/remboursement/1
+{"idRemboursement":2,"montant":700.0,"dateOrdonnance":"2026-02-24","nombreMedicaments":2,"nomPatient":"said"}hamza@hamza-X55A:~/Downloads/TP3_Discrovery_2026-master/ms-ordonnance$ 
+  
+
+
+
+curl http://localhost:8081/api/patient/1
+curl http://localhost:8081/api/patient/1
+curl http://localhost:8082/api/ordonnance/1
+curl http://localhost:8082/api/ordonnance/1
+
+
+
+t créer dans ms-remboursement :
+
+Proxy/GraphQlClientConfig.java → pour appeler ms-ordonnance via GraphQL
+Proxy/PatientProxy.java → pour appeler ms-patient via REST (Feign)
+DTO/OrdonnanceDTO.java → pour recevoir dateOrdonnance + medicaments
+DTO/PatientDTO.java → pour recevoir le nom du patient
+Controller/RemboursementController.java → endpoint REST qui combine tout
+Modifier MsRemboursementApplication.java → ajouter @EnableFeignClients
+Modifier ms-ordonnance/schema.graphqls → ajouter getOrdonnanceById
+
+
+
+
+
+organized: {
+  "idRemboursement": 2,
+  "montant": 700.0,
+  "dateOrdonnance": "2026-02-24",       via GraphQL (ms-ordonnance)
+  "nombreMedicaments": 2,               via GraphQL (ms-ordonnance)
+  "nomPatient": "said"                  via REST API (ms-patient)
+}

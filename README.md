@@ -90,10 +90,19 @@ Configuration: sliding window of 5 calls, 50% failure threshold, 10 s in the ope
 
 ## Docker
 
-Each module has a `Dockerfile` that copies the built jar from `target/`, so build the jars first:
+Each module has a `Dockerfile` that copies the built jar from `target/`, so build the jars first, then let Compose build the images and start everything:
 
 ```bash
-cd <module> && ./mvnw package -DskipTests
+for m in registry api-gateway ms-patient ms-ordonnance ms-remboursement; do
+  (cd $m && ./mvnw -q package -DskipTests)
+done
+docker compose up --build
+```
+
+Only the registry (8888) and the gateway (7777) are exposed. Call the services through the gateway:
+
+```bash
+curl http://localhost:7777/ms-patient/api/patient/1
 ```
 
 - `docker-compose.yml`: registry, gateway and the three services (in-memory H2).
